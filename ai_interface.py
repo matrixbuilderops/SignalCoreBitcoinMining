@@ -1,4 +1,11 @@
-import subprocess
+"""
+AI interface module for Bitcoin mining system.
+
+This module provides AI-powered decision making capabilities using Ollama
+to analyze mathematical validation results and provide mining recommendations.
+"""
+
+import subprocess  # nosec B404
 from typing import Dict, Any
 
 
@@ -37,12 +44,12 @@ Provide a brief mining recommendation (PROCEED, HOLD, or RETRY) and reasoning.""
 
     try:
         # Call Ollama with the structured prompt
-        result = subprocess.run(
-            ['ollama', 'run', 'mixtral:8x7b-instruct-v0.1-q6_K'],
+        result = subprocess.run(  # nosec B603 B607
+            ["ollama", "run", "mixtral:8x7b-instruct-v0.1-q6_K"],
             input=prompt,
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=30,
         )
 
         if result.returncode == 0:

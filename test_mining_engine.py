@@ -13,16 +13,22 @@ def test_math_module() -> bool:
     try:
         from math_module import process_block_with_math, knuth_algorithm
 
-        test_data = b'test_block_data_for_validation'
+        test_data = b"test_block_data_for_validation"
         processed, results = process_block_with_math(test_data, 16000)
 
         # Validate results structure
-        required_keys = ['level', 'fork_integrity', 'entropy_parity', 'fork_sync', 'sorrell']
+        required_keys = [
+            "level",
+            "fork_integrity",
+            "entropy_parity",
+            "fork_sync",
+            "sorrell",
+        ]
         for key in required_keys:
             assert key in results, f"Missing key: {key}"
 
         # Validate Knuth algorithm
-        knuth_result = knuth_algorithm(10, 3, 100)
+        knuth_result = knuth_algorithm(10, 3, 16000)  # Use Level 16000
         assert knuth_result > 0, "Knuth algorithm should return positive value"
 
         print("  ✓ Math module passed")
@@ -39,11 +45,11 @@ def test_ai_interface() -> bool:
         from ai_interface import call_ai_model, extract_recommendation
 
         mock_validation = {
-            'level': 16000,
-            'fork_integrity': True,
-            'entropy_parity': True,
-            'fork_sync': True,
-            'sorrell': 123
+            "level": 16000,
+            "fork_integrity": True,
+            "entropy_parity": True,
+            "fork_sync": True,
+            "sorrell": 123,
         }
 
         response = call_ai_model(mock_validation, "test_hash")
@@ -68,20 +74,22 @@ def test_mining_controller() -> bool:
 
         # Test with valid solution
         valid_solution = {
-            'fork_integrity': True,
-            'entropy_parity': True,
-            'fork_sync': True
+            "fork_integrity": True,
+            "entropy_parity": True,
+            "fork_sync": True,
         }
 
         # Test with invalid solution
         invalid_solution = {
-            'fork_integrity': False,
-            'entropy_parity': True,
-            'fork_sync': True
+            "fork_integrity": False,
+            "entropy_parity": True,
+            "fork_sync": True,
         }
 
         assert validate_solution(valid_solution) is True, "Valid solution should pass"
-        assert validate_solution(invalid_solution) is False, "Invalid solution should fail"
+        assert (
+            validate_solution(invalid_solution) is False
+        ), "Invalid solution should fail"
         assert len(BITCOIN_ADDRESS) > 20, "Bitcoin address should be valid length"
 
         print("  ✓ Mining controller passed")
@@ -119,8 +127,8 @@ def test_orchestrator() -> bool:
         orchestrator = BitcoinMiningOrchestrator(verbose=False, ai_enabled=False)
 
         # Test block processing without actual mining
-        topic = b'hashblock'
-        message = b'test_block_hash_for_validation_12345678'
+        topic = b"hashblock"
+        message = b"test_block_hash_for_validation_12345678"
 
         # This should not raise exceptions
         orchestrator.on_block_received(topic, message)
@@ -144,7 +152,7 @@ def main():
         test_ai_interface,
         test_mining_controller,
         test_block_listener,
-        test_orchestrator
+        test_orchestrator,
     ]
 
     passed = 0
