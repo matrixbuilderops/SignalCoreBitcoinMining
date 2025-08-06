@@ -1,0 +1,62 @@
+# Bitcoin Mining System - Validation Configuration
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+include = "\\.pyi?$"
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = "E203,W503"
+per-file-ignores = """
+    __init__.py:F401
+    test_*.py:B101
+"""
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "test_*.py",
+    "*_test.py",
+    "how_the_model_works.py",
+    "system_flow_visualizer.py"
+]
+
+[tool.coverage.report]
+minimum = 70
+
+[tool.interrogate]
+ignore-nested-functions = true
+ignore-private = true
+ignore-magic = true
+ignore-module = true
+minimum = 80
+
+[tool.vulture]
+min_confidence = 80
+paths = ["."]
+ignore_names = ["_*", "test_*"]
+
+[tool.pylint.messages_control]
+disable = [
+    "C0114",
+    "R0903",
+    "W0613",
+]
+
+[tool.pylint.format]
+max-line-length = 88
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

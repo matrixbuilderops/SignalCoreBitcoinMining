@@ -12,7 +12,7 @@ import hashlib
 def knuth(a: int, b: int, c: int) -> int:
     result = a
     for _ in range(b):
-        result = result ** c
+        result = result**c
     return result
 
 
@@ -79,7 +79,7 @@ def run_level_16000(verbose: bool = False) -> dict:
             if isinstance(val, list):
                 for item in val:
                     print(f"  - {item}")
-            else:
+            elif isinstance(val, dict):
                 for k, v in val.items():
                     print(f"  {k}: {v}")
             print()

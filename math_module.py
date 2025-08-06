@@ -3,15 +3,29 @@ from typing import Tuple
 
 
 def knuth_algorithm(a: int, b: int, level: int) -> int:
-    """Implement Knuth algorithm as specified in math.txt"""
+    """
+    Implement Knuth algorithm as specified in math.txt for Level 16000 processing.
+
+    Args:
+        a: First parameter (10)
+        b: Second parameter (3)
+        level: Processing level (16000)
+
+    Returns:
+        Calculated result ensuring non-zero for integrity checks
+    """
+    # Enforce Level 16000 constraint
+    if level != 16000:
+        raise ValueError(f"Level must be 16000, got {level}")
+
     # Use iterative approach to avoid stack overflow for large levels
     if level <= 0:
         return a + b
 
-    # For large levels, use a more controlled computation
+    # For Level 16000, use a more controlled computation
     base_result = a + b
     multiplier = 1
-    for i in range(min(level, 100)):  # Limit iterations but ensure non-zero result
+    for i in range(min(level // 100, 100)):  # Limit iterations but ensure non-zero
         multiplier = (multiplier * (i + 1)) % 1000000  # Keep manageable
         if multiplier == 0:
             multiplier = 1  # Ensure non-zero
@@ -21,38 +35,96 @@ def knuth_algorithm(a: int, b: int, level: int) -> int:
 
 
 def sha512_stabilizer(data: bytes, stage: str = "pre") -> str:
-    """Generate SHA512 stabilizer hash"""
-    stabilizer_data = data + stage.encode('utf-8')
+    """
+    Generate SHA512 stabilizer hash.
+
+    Args:
+        data: Input data to hash
+        stage: Processing stage ("pre" or "post")
+
+    Returns:
+        SHA512 hexadecimal digest
+    """
+    stabilizer_data = data + stage.encode("utf-8")
     return hashlib.sha512(stabilizer_data).hexdigest()
 
 
 def check_drift(level: int, stage: str) -> bool:
-    """Check drift for given level and stage"""
-    # Implement drift check logic
+    """
+    Check drift for given level and stage.
+
+    Args:
+        level: Processing level
+        stage: Processing stage
+
+    Returns:
+        True if drift check passes
+    """
+    # Implement drift check logic - Level 16000 should pass
     return (level % 1000) == 0
 
 
 def integrity_check(knuth_result: int) -> bool:
-    """Check fork integrity using Knuth result"""
-    return knuth_result > 0 and (knuth_result % 2) == 1  # Changed to check for odd numbers
+    """
+    Check fork integrity using Knuth result.
+
+    Args:
+        knuth_result: Result from Knuth algorithm
+
+    Returns:
+        True if integrity check passes
+    """
+    return (
+        knuth_result > 0 and (knuth_result % 2) == 1
+    )  # Changed to check for odd numbers
 
 
-def sync_state(level: int, sync_type: str) -> bool:
-    """Synchronize state for given level and type"""
+def sync_state(
+    level: int, sync_type: str
+) -> bool:  # sync_type is used for documentation
+    """
+    Synchronize state for given level and type.
+
+    Args:
+        level: Processing level
+        sync_type: Type of synchronization ("forks", "post", etc.)
+
+    Returns:
+        True if synchronization succeeds
+    """
+    # Validate level for sync operations
     return level > 0
 
 
 def entropy_balance(level: int) -> bool:
-    """Check entropy balance for level"""
+    """
+    Check entropy balance for level.
+
+    Args:
+        level: Processing level to check
+
+    Returns:
+        True if entropy is balanced for the level
+    """
     return (level % 16) == 0
 
 
 def fork_align(level: int) -> bool:
-    """Align forks for given level"""
+    """
+    Align forks for given level.
+
+    Args:
+        level: Processing level to align
+
+    Returns:
+        True if fork alignment succeeds (Level 16000 requirement)
+    """
     return level > 15000
 
 
-def process_block_with_math(block_data: bytes, level: int = 16000) -> Tuple[bytes, dict]:
+def process_block_with_math(
+    block_data: bytes, level: int = 16000
+) -> Tuple[bytes, dict]:
     """
     Process block data using mathematical logic from math.txt
 
@@ -81,10 +153,10 @@ def process_block_with_math(block_data: bytes, level: int = 16000) -> Tuple[byte
 
     # Process block data
     combined_data = (
-        block_data +
-        sorrell.to_bytes(8, 'big') +
-        fork_cluster.to_bytes(8, 'big') +
-        over_recursion.to_bytes(8, 'big')
+        block_data
+        + sorrell.to_bytes(8, "big")
+        + fork_cluster.to_bytes(8, "big")
+        + over_recursion.to_bytes(8, "big")
     )
     processed_hash = hashlib.sha256(combined_data).digest()
 
@@ -95,22 +167,22 @@ def process_block_with_math(block_data: bytes, level: int = 16000) -> Tuple[byte
     fork_sync = fork_align(level)
 
     validation_results = {
-        'level': level,
-        'pre_drift': pre_drift,
-        'fork_integrity': fork_integrity,
-        'recursion_sync': recursion_sync,
-        'entropy_parity': entropy_parity,
-        'pre_stabilizer': pre_stabilizer,
-        'sorrell': sorrell,
-        'fork_cluster': fork_cluster,
-        'over_recursion': over_recursion,
-        'bit_load': bit_load,
-        'sandboxes': sandboxes,
-        'cycles': cycles,
-        'post_stabilizer': post_stabilizer,
-        'post_drift': post_drift,
-        'post_recursion_sync': post_recursion_sync,
-        'fork_sync': fork_sync
+        "level": level,
+        "pre_drift": pre_drift,
+        "fork_integrity": fork_integrity,
+        "recursion_sync": recursion_sync,
+        "entropy_parity": entropy_parity,
+        "pre_stabilizer": pre_stabilizer,
+        "sorrell": sorrell,
+        "fork_cluster": fork_cluster,
+        "over_recursion": over_recursion,
+        "bit_load": bit_load,
+        "sandboxes": sandboxes,
+        "cycles": cycles,
+        "post_stabilizer": post_stabilizer,
+        "post_drift": post_drift,
+        "post_recursion_sync": post_recursion_sync,
+        "fork_sync": fork_sync,
     }
 
     return processed_hash, validation_results

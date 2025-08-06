@@ -6,9 +6,10 @@ This script creates a visual representation of how the mining system works,
 showing the flow from block detection to mining submission.
 """
 
+
 def create_system_flow_diagram():
     """Create ASCII art diagram of the system flow"""
-    
+
     diagram = """
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                        SignalCoreBitcoinMining System Flow                    ║
@@ -137,44 +138,45 @@ def create_system_flow_diagram():
 ║  └─┘                                                                          ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 """
-    
+
     return diagram
+
 
 def print_component_details():
     """Print detailed information about each component"""
-    
+
     components = {
         "Block Listener": {
             "Purpose": "Real-time block detection",
             "Methods": ["ZMQ subscription", "Polling fallback"],
-            "Output": "Raw block data"
+            "Output": "Raw block data",
         },
         "Math Module": {
             "Purpose": "Level 16000 cryptographic validation",
             "Algorithm": "Knuth(10, 3, 16000)",
-            "Stages": ["Pre-safeguards", "Main equation", "Post-safeguards"]
+            "Stages": ["Pre-safeguards", "Main equation", "Post-safeguards"],
         },
         "AI Interface": {
             "Purpose": "Intelligent mining decisions",
             "Model": "mixtral:8x7b-instruct-v0.1-q6_K",
-            "Recommendations": ["PROCEED", "HOLD", "RETRY", "ERROR"]
+            "Recommendations": ["PROCEED", "HOLD", "RETRY", "ERROR"],
         },
         "Mining Controller": {
             "Purpose": "Bitcoin network interaction",
             "Validation": "Triple-check solution integrity",
-            "Submission": "Bitcoin Core RPC calls"
+            "Submission": "Bitcoin Core RPC calls",
         },
         "Orchestrator": {
             "Purpose": "System coordination",
             "Mode": "Autonomous operation",
-            "Features": ["Error handling", "Performance monitoring"]
-        }
+            "Features": ["Error handling", "Performance monitoring"],
+        },
     }
-    
-    print("\n" + "="*80)
+
+    print("\n" + "=" * 80)
     print("COMPONENT DETAILS")
-    print("="*80)
-    
+    print("=" * 80)
+
     for name, details in components.items():
         print(f"\n{name.upper()}:")
         for key, value in details.items():
@@ -183,25 +185,27 @@ def print_component_details():
             else:
                 print(f"  {key}: {value}")
 
+
 def main():
     """Main function to display system flow visualization"""
     print("SignalCoreBitcoinMining - System Flow Model")
     print("=" * 50)
     print("\nThis visualization shows how the autonomous Bitcoin mining system")
     print("processes blocks from detection to network submission.\n")
-    
+
     print(create_system_flow_diagram())
     print_component_details()
-    
-    print("\n" + "="*80)
+
+    print("\n" + "=" * 80)
     print("SYSTEM CHARACTERISTICS")
-    print("="*80)
+    print("=" * 80)
     print("• Autonomous: Operates without human intervention")
     print("• Intelligent: AI-enhanced decision making")
     print("• Resilient: Multiple fallback mechanisms")
     print("• Validated: Mathematical cryptographic validation")
     print("• Monitored: Real-time performance tracking")
     print("• Configurable: Flexible operation modes")
+
 
 if __name__ == "__main__":
     main()
