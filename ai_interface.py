@@ -1,16 +1,15 @@
 import subprocess
-import json
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 
 def call_ai_model(validation_data: Dict[str, Any], block_hash: str = "") -> str:
     """
     Call the Ollama AI model with validation data and get response
-    
+
     Args:
         validation_data: Dictionary containing validation results from math processing
         block_hash: Optional block hash for context
-        
+
     Returns:
         AI model response string
     """
@@ -45,13 +44,13 @@ Provide a brief mining recommendation (PROCEED, HOLD, or RETRY) and reasoning.""
             text=True,
             timeout=30
         )
-        
+
         if result.returncode == 0:
             return result.stdout.strip()
         else:
             # Fallback response if AI call fails
             return f"AI_ERROR: {result.stderr.strip()}"
-            
+
     except subprocess.TimeoutExpired:
         return "AI_TIMEOUT: Model response took too long"
     except subprocess.CalledProcessError as e:
@@ -63,15 +62,15 @@ Provide a brief mining recommendation (PROCEED, HOLD, or RETRY) and reasoning.""
 def extract_recommendation(ai_response: str) -> str:
     """
     Extract mining recommendation from AI response
-    
+
     Args:
         ai_response: Raw AI model response
-        
+
     Returns:
         Extracted recommendation (PROCEED, HOLD, RETRY, or ERROR)
     """
     response_upper = ai_response.upper()
-    
+
     if "PROCEED" in response_upper:
         return "PROCEED"
     elif "HOLD" in response_upper:
@@ -83,4 +82,3 @@ def extract_recommendation(ai_response: str) -> str:
     else:
         # Default to HOLD if unclear
         return "HOLD"
-

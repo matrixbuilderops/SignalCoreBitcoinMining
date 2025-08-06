@@ -1,5 +1,5 @@
 import hashlib
-from typing import Tuple, Optional
+from typing import Tuple
 
 
 def knuth_algorithm(a: int, b: int, level: int) -> int:
@@ -7,7 +7,7 @@ def knuth_algorithm(a: int, b: int, level: int) -> int:
     # Use iterative approach to avoid stack overflow for large levels
     if level <= 0:
         return a + b
-    
+
     # For large levels, use a more controlled computation
     base_result = a + b
     multiplier = 1
@@ -15,7 +15,7 @@ def knuth_algorithm(a: int, b: int, level: int) -> int:
         multiplier = (multiplier * (i + 1)) % 1000000  # Keep manageable
         if multiplier == 0:
             multiplier = 1  # Ensure non-zero
-    
+
     result = (base_result * multiplier) % (10**10)
     return max(result, 10)  # Ensure result is at least 10 for integrity check
 
@@ -55,11 +55,11 @@ def fork_align(level: int) -> bool:
 def process_block_with_math(block_data: bytes, level: int = 16000) -> Tuple[bytes, dict]:
     """
     Process block data using mathematical logic from math.txt
-    
+
     Args:
         block_data: Raw block data
         level: Processing level (default 16000 from math.txt)
-        
+
     Returns:
         Tuple of (processed_data, validation_results)
     """
@@ -70,7 +70,7 @@ def process_block_with_math(block_data: bytes, level: int = 16000) -> Tuple[byte
     recursion_sync = sync_state(level, "forks")
     entropy_parity = entropy_balance(level)
     pre_stabilizer = sha512_stabilizer(block_data, "pre")
-    
+
     # Main equation processing
     sorrell = knuth_algorithm(10, 3, level)
     fork_cluster = knuth_algorithm(10, 3, level)
@@ -78,7 +78,7 @@ def process_block_with_math(block_data: bytes, level: int = 16000) -> Tuple[byte
     bit_load = level * 100
     sandboxes = 1
     cycles = level // 100 + 1
-    
+
     # Process block data
     combined_data = (
         block_data +
@@ -87,13 +87,13 @@ def process_block_with_math(block_data: bytes, level: int = 16000) -> Tuple[byte
         over_recursion.to_bytes(8, 'big')
     )
     processed_hash = hashlib.sha256(combined_data).digest()
-    
+
     # Post-safeguards
     post_stabilizer = sha512_stabilizer(processed_hash, "post")
     post_drift = check_drift(level, "post")
     post_recursion_sync = sync_state(level, "post")
     fork_sync = fork_align(level)
-    
+
     validation_results = {
         'level': level,
         'pre_drift': pre_drift,
@@ -112,6 +112,5 @@ def process_block_with_math(block_data: bytes, level: int = 16000) -> Tuple[byte
         'post_recursion_sync': post_recursion_sync,
         'fork_sync': fork_sync
     }
-    
-    return processed_hash, validation_results
 
+    return processed_hash, validation_results
