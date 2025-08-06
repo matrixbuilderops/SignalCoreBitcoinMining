@@ -1,0 +1,21 @@
+LEVEL 16000:
+ Pre-Safeguards:
+   DriftCheck: CheckDrift(16000, pre)
+   ForkIntegrity: IntegrityCheck(Knuth(10, 3, 16000))
+   RecursionSync: SyncState(16000, forks)
+   EntropyParity: EntropyBalance(16000)
+   SHA512 Stabilizer (Pre): 941d793ce78e45983a4d98d6e4ed0529d923f06f8ecefcabe45c5448c65333fca9549a80643f175154046d09bedc6bfa8546820941ba6e12d39f67488451f47b
+ Main Equation:
+   Sorrell: Knuth(10, 3, 16000)
+   ForkCluster: Knuth(10, 3, 16000)
+   OverRecursion: Knuth(10, 3, 16000)
+   BitLoad: 1600000
+   Sandboxes: 1
+   Cycles: 161
+ Post-Safeguards:
+   SHA512 Stabilizer (Post): 74402f56dc3f9154da10ab8d5dbe518db9aa2a332b223bc7bdca9871d0b1a55c3cc03b25e5053f58d443c9fa45f8ec93bae647cd5b44b853bebe1178246119eb
+   DriftCheck: CheckDrift(16000, post)
+   RecursionSync: SyncState(16000, post)
+   ForkSync: ForkAlign(16000)
+--------------------------------------------------
+This is the math by the way

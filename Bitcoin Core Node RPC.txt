@@ -1,0 +1,12 @@
+ 🪪 Bitcoin Core Node RPC Auth Info
+
+rpcuser=SingalCoreBitcoin
+rpcpassword=B1tc0n4L1dz
+
+💼 Wallet Name
+
+SignalCoreBitcoinMining
+
+🏦 Bitcoin Wallet Address
+
+bc1qcmxyhlpm3lf9zvyevqas9n547lywws2e7wvuu1
