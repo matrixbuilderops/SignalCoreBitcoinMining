@@ -1,0 +1,14 @@
+# Core dependencies for Bitcoin mining engine
+pyzmq>=25.0.0  # For ZMQ block listening (optional, has fallback)
+
+# Optional validation tools (included as zip files)
+# black>=23.0.0
+# flake8>=6.0.0
+# pylint>=3.0.0
+# mypy>=1.0.0
+# bandit>=1.7.0
+# z3-solver>=4.12.0
+# hypothesis>=6.0.0
+# coverage>=7.0.0
+# vulture>=2.0.0
+# interrogate>=1.5.0
