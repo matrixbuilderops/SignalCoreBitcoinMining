@@ -1,10 +1,3 @@
-"""
-Block listener module for Bitcoin mining system.
-
-This module provides real-time block detection using ZMQ subscriptions
-with fallback to polling for environments where ZMQ is not available.
-"""
-
 import time
 import hashlib
 from typing import Callable
@@ -14,7 +7,6 @@ from typing import Callable
 ZMQ_AVAILABLE = False
 try:
     import zmq
-
     ZMQ_AVAILABLE = True
 except ImportError:
     print("Warning: ZMQ not available, using fallback polling method")
@@ -35,13 +27,7 @@ def listen_for_blocks(callback: Callable, verbose: bool = True) -> None:
 
 
 def _listen_zmq(callback: Callable, verbose: bool) -> None:
-    """
-    Listen for blocks using ZMQ.
-
-    Args:
-        callback: Function to call when new block is detected
-        verbose: Whether to output status messages
-    """
+    """Listen for blocks using ZMQ"""
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
 
@@ -76,13 +62,7 @@ def _listen_zmq(callback: Callable, verbose: bool) -> None:
 
 
 def _listen_polling(callback: Callable, verbose: bool) -> None:
-    """
-    Fallback polling method when ZMQ is not available.
-
-    Args:
-        callback: Function to call when new block is detected
-        verbose: Whether to output status messages
-    """
+    """Fallback polling method when ZMQ is not available"""
     from mining_controller import get_blockchain_info
 
     if verbose:
@@ -104,7 +84,7 @@ def _listen_polling(callback: Callable, verbose: bool) -> None:
 
                         # Create mock ZMQ-like message for callback compatibility
                         topic = b"hashblock"
-                        message = current_hash.encode("utf-8")
+                        message = current_hash.encode('utf-8')
                         callback(topic, message)
 
                     last_block_hash = current_hash
@@ -132,8 +112,6 @@ def create_mock_block_data(block_hash: str) -> bytes:
         Mock block data as bytes
     """
     # Create deterministic mock block data from hash
-    hash_bytes = (
-        bytes.fromhex(block_hash) if len(block_hash) == 64 else block_hash.encode()
-    )
+    hash_bytes = bytes.fromhex(block_hash) if len(block_hash) == 64 else block_hash.encode()
     mock_data = hashlib.sha256(hash_bytes + b"mock_block_data").digest()
     return mock_data * 8  # Make it larger for realistic processing

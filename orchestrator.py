@@ -1,10 +1,3 @@
-"""
-Main orchestrator for autonomous Bitcoin mining operations.
-
-This module coordinates all mining system components including block detection,
-mathematical validation, AI analysis, and network submission.
-"""
-
 import sys
 import time
 from typing import Dict, Any
@@ -16,29 +9,17 @@ from mining_controller import submit_solution, monitor_mining_progress
 
 
 class BitcoinMiningOrchestrator:
-    """Main orchestrator for autonomous Bitcoin mining operations."""
+    """Main orchestrator for autonomous Bitcoin mining operations"""
 
     def __init__(self, verbose: bool = True, ai_enabled: bool = True):
-        """
-        Initialize the Bitcoin mining orchestrator.
-
-        Args:
-            verbose: Enable verbose logging output
-            ai_enabled: Enable AI-powered decision making
-        """
         self.verbose = verbose
         self.ai_enabled = ai_enabled
         self.blocks_processed = 0
         self.successful_submissions = 0
-        self.last_block_time = time.time()  # Used for performance tracking
+        self.last_block_time = time.time()
 
     def log(self, message: str) -> None:
-        """
-        Log message if verbose mode is enabled.
-
-        Args:
-            message: Message to log with timestamp
-        """
+        """Log message if verbose mode is enabled"""
         if self.verbose:
             print(f"[{time.strftime('%H:%M:%S')}] {message}")
 
@@ -51,9 +32,7 @@ class BitcoinMiningOrchestrator:
             message: Block hash or raw block data
         """
         try:
-            block_hash = (
-                message.decode("utf-8") if len(message) < 100 else message.hex()[:64]
-            )
+            block_hash = message.decode('utf-8') if len(message) < 100 else message.hex()[:64]
             self.log(f"Processing new block: {block_hash[:16]}...")
 
             # Create or extract block data
@@ -63,7 +42,7 @@ class BitcoinMiningOrchestrator:
                 block_data = create_mock_block_data(block_hash)
 
             # Process block with mathematical validation
-            _processed_data, validation_results = process_block_with_math(block_data)
+            processed_data, validation_results = process_block_with_math(block_data)
             self.blocks_processed += 1
 
             self.log(f"Math processing complete - Level: {validation_results['level']}")
@@ -97,16 +76,8 @@ class BitcoinMiningOrchestrator:
         except Exception as e:
             self.log(f"Error processing block: {str(e)}")
 
-    def _attempt_mining(
-        self, validation_results: Dict[str, Any], block_hash: str
-    ) -> None:
-        """
-        Attempt to submit mining solution.
-
-        Args:
-            validation_results: Results from mathematical validation
-            block_hash: Current block hash being processed
-        """
+    def _attempt_mining(self, validation_results: Dict[str, Any], block_hash: str) -> None:
+        """Attempt to submit mining solution"""
         try:
             submitted_hash = submit_solution(validation_results)
             if submitted_hash:
@@ -118,20 +89,15 @@ class BitcoinMiningOrchestrator:
             self.log(f"Mining submission error: {str(e)}")
 
     def _log_status(self) -> None:
-        """Log current mining status and performance metrics."""
+        """Log current mining status"""
         if self.verbose and self.blocks_processed % 5 == 0:
-            success_rate = (
-                (self.successful_submissions / self.blocks_processed * 100)
-                if self.blocks_processed > 0
-                else 0
-            )
-            self.log(
-                f"Status: {self.blocks_processed} blocks processed, "
-                f"{self.successful_submissions} successful ({success_rate:.1f}%)"
-            )
+            success_rate = (self.successful_submissions / self.blocks_processed * 100) \
+                if self.blocks_processed > 0 else 0
+            self.log(f"Status: {self.blocks_processed} blocks processed, "
+                     f"{self.successful_submissions} successful ({success_rate:.1f}%)")
 
     def start_monitoring(self) -> None:
-        """Start the autonomous mining process and block monitoring."""
+        """Start the autonomous mining process"""
         self.log("Starting Bitcoin mining orchestrator...")
 
         # Check initial network status
@@ -156,18 +122,17 @@ class BitcoinMiningOrchestrator:
 
 
 def main():
-    """Main entry point for the mining orchestrator."""
+    """Main entry point for the mining orchestrator"""
     import argparse
 
     parser = argparse.ArgumentParser(description="Autonomous Bitcoin Mining Engine")
     parser.add_argument("--quiet", action="store_true", help="Suppress verbose output")
-    parser.add_argument(
-        "--no-ai", action="store_true", help="Disable AI recommendations"
-    )
+    parser.add_argument("--no-ai", action="store_true", help="Disable AI recommendations")
     args = parser.parse_args()
 
     orchestrator = BitcoinMiningOrchestrator(
-        verbose=not args.quiet, ai_enabled=not args.no_ai
+        verbose=not args.quiet,
+        ai_enabled=not args.no_ai
     )
 
     orchestrator.start_monitoring()
