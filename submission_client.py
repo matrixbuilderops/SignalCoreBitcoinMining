@@ -16,7 +16,7 @@ from mining_controller import (
     get_wallet_balance,
     BITCOIN_ADDRESS,
     BITCOIN_WALLET_NAME,
-    BITCOIN_RPC_USER
+    BITCOIN_RPC_USER,
 )
 
 
@@ -40,7 +40,7 @@ class SubmissionClient:
     def log(self, message: str) -> None:
         """Log message if verbose mode is enabled."""
         if self.verbose:
-            timestamp = time.strftime('%H:%M:%S')
+            timestamp = time.strftime("%H:%M:%S")
             print(f"[{timestamp}] SubmissionClient: {message}")
 
     def authenticate(self) -> bool:
@@ -51,28 +51,30 @@ class SubmissionClient:
             True if authentication successful
         """
         self.log("Testing Bitcoin Core RPC authentication...")
-        
+
         try:
             # Test basic RPC call
             info = get_blockchain_info()
             if info.get("result"):
                 self.log("✓ RPC authentication successful")
-                
+
                 # Validate wallet address
                 if validate_wallet_address(BITCOIN_ADDRESS):
                     self.log(f"✓ Wallet address validated: {BITCOIN_ADDRESS}")
                 else:
                     self.log(f"⚠ Wallet address validation failed: {BITCOIN_ADDRESS}")
-                
+
                 # Check wallet balance
                 balance = get_wallet_balance()
                 self.log(f"Wallet balance: {balance} BTC")
-                
+
                 return True
             else:
-                self.log(f"✗ RPC authentication failed: {info.get('error', 'Unknown error')}")
+                self.log(
+                    f"✗ RPC authentication failed: {info.get('error', 'Unknown error')}"
+                )
                 return False
-                
+
         except Exception as e:
             self.log(f"✗ Authentication error: {str(e)}")
             return False
@@ -85,20 +87,20 @@ class SubmissionClient:
             Dictionary with network status information
         """
         self.log("Checking Bitcoin network status...")
-        
+
         try:
             blockchain_info = get_blockchain_info()
             mining_info = get_mining_info()
-            
+
             if not blockchain_info.get("result") or not mining_info.get("result"):
                 return {
                     "ready": False,
-                    "error": "Could not retrieve network information"
+                    "error": "Could not retrieve network information",
                 }
-            
+
             bc_data = blockchain_info["result"]
             mining_data = mining_info["result"]
-            
+
             status = {
                 "ready": True,
                 "block_height": bc_data.get("blocks", 0),
@@ -106,19 +108,23 @@ class SubmissionClient:
                 "difficulty": bc_data.get("difficulty", 0),
                 "network_hash_rate": mining_data.get("networkhashps", 0),
                 "chain": bc_data.get("chain", "unknown"),
-                "synchronized": bc_data.get("verificationprogress", 0) > 0.99
+                "synchronized": bc_data.get("verificationprogress", 0) > 0.99,
             }
-            
-            self.log(f"Network status: {status['chain']} chain, height {status['block_height']}")
+
+            self.log(
+                f"Network status: {status['chain']} chain, height {status['block_height']}"
+            )
             self.log(f"Synchronization: {status['verification_progress']*100:.1f}%")
-            
+
             return status
-            
+
         except Exception as e:
             self.log(f"Error checking network status: {str(e)}")
             return {"ready": False, "error": str(e)}
 
-    def prepare_solution_data(self, validation_results: Dict[str, Any]) -> Dict[str, Any]:
+    def prepare_solution_data(
+        self, validation_results: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Prepare solution data for submission.
 
@@ -129,7 +135,7 @@ class SubmissionClient:
             Prepared solution data
         """
         self.log("Preparing solution data for submission...")
-        
+
         # Convert validation results to submission format
         solution_data = {
             "level": validation_results.get("level", 16000),
@@ -145,20 +151,26 @@ class SubmissionClient:
             "post_stabilizer": validation_results.get("post_stabilizer", ""),
             "submission_time": time.time(),
             "wallet_address": BITCOIN_ADDRESS,
-            "wallet_name": BITCOIN_WALLET_NAME
+            "wallet_name": BITCOIN_WALLET_NAME,
         }
-        
-        validation_count = sum([
-            solution_data['fork_integrity'], 
-            solution_data['entropy_parity'], 
-            solution_data['fork_sync']
-        ])
-        self.log(f"Solution prepared - Level: {solution_data['level']}, "
-                f"Validations: {validation_count}/3")
-        
+
+        validation_count = sum(
+            [
+                solution_data["fork_integrity"],
+                solution_data["entropy_parity"],
+                solution_data["fork_sync"],
+            ]
+        )
+        self.log(
+            f"Solution prepared - Level: {solution_data['level']}, "
+            f"Validations: {validation_count}/3"
+        )
+
         return solution_data
 
-    def submit_block_solution(self, validation_results: Dict[str, Any]) -> Optional[str]:
+    def submit_block_solution(
+        self, validation_results: Dict[str, Any]
+    ) -> Optional[str]:
         """
         Submit mining solution to Bitcoin network.
 
@@ -170,17 +182,17 @@ class SubmissionClient:
         """
         self.submissions_attempted += 1
         self.log(f"Submitting solution (attempt #{self.submissions_attempted})...")
-        
+
         try:
             # Prepare solution data
             solution_data = self.prepare_solution_data(validation_results)
-            
+
             # Record submission time
             self.last_submission_time = time.time()
-            
+
             # Submit using existing mining controller
             submitted_hash = submit_solution(validation_results)
-            
+
             if submitted_hash:
                 self.submissions_successful += 1
                 self.log(f"✓ Solution submitted successfully!")
@@ -191,7 +203,7 @@ class SubmissionClient:
             else:
                 self.log("✗ Solution submission failed validation")
                 return None
-                
+
         except Exception as e:
             self.log(f"✗ Error submitting solution: {str(e)}")
             return None
@@ -220,7 +232,7 @@ class SubmissionClient:
             "success_rate_percent": self.get_success_rate(),
             "last_submission_time": self.last_submission_time,
             "wallet_address": BITCOIN_ADDRESS,
-            "rpc_user": BITCOIN_RPC_USER
+            "rpc_user": BITCOIN_RPC_USER,
         }
 
     def verify_submission_readiness(self) -> bool:
@@ -231,22 +243,24 @@ class SubmissionClient:
             True if ready for submissions
         """
         self.log("Verifying submission readiness...")
-        
+
         # Check authentication
         if not self.authenticate():
             self.log("✗ Authentication check failed")
             return False
-        
+
         # Check network status
         network_status = self.check_network_status()
         if not network_status.get("ready", False):
-            self.log(f"✗ Network not ready: {network_status.get('error', 'Unknown error')}")
+            self.log(
+                f"✗ Network not ready: {network_status.get('error', 'Unknown error')}"
+            )
             return False
-        
+
         if not network_status.get("synchronized", False):
             self.log("⚠ Network not fully synchronized")
             # Continue anyway, but warn
-        
+
         self.log("✓ Submission client ready")
         return True
 
@@ -264,14 +278,14 @@ def main():
     Main entry point for testing the submission client.
     """
     print("Testing Bitcoin Core submission client...")
-    
+
     # Create client
     client = SubmissionClient(verbose=True)
-    
+
     # Test readiness
     if client.verify_submission_readiness():
         print("✓ Submission client is ready")
-        
+
         # Test with mock validation data
         test_validation = {
             "level": 16000,
@@ -284,17 +298,17 @@ def main():
             "bit_load": 1600000,
             "cycles": 161,
             "pre_stabilizer": "941d793ce78e45983a4d98d6e4ed0529d923f06f8ecefcabe45c5448c65333fca",
-            "post_stabilizer": "74402f56dc3f9154da10ab8d5dbe518db9aa2a332b223bc7bdca9871d0b1a55c"
+            "post_stabilizer": "74402f56dc3f9154da10ab8d5dbe518db9aa2a332b223bc7bdca9871d0b1a55c",
         }
-        
+
         print("\nTesting solution preparation...")
         solution_data = client.prepare_solution_data(test_validation)
         print(f"Solution prepared with level: {solution_data['level']}")
-        
+
         # Show stats
         stats = client.get_submission_stats()
         print(f"\nSubmission Stats: {stats}")
-        
+
     else:
         print("✗ Submission client not ready")
 

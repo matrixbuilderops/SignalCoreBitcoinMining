@@ -16,7 +16,9 @@ class ModelCaller:
     Interface for calling local AI models with Bitcoin mining context.
     """
 
-    def __init__(self, model_name: str = "mixtral:8x7b-instruct-v0.1-q6_K", verbose: bool = True):
+    def __init__(
+        self, model_name: str = "mixtral:8x7b-instruct-v0.1-q6_K", verbose: bool = True
+    ):
         """
         Initialize the model caller.
 
@@ -77,7 +79,9 @@ Post-Safeguards:
 """
         return math_context
 
-    def call_model_with_math(self, validation_data: Dict[str, Any], block_hash: str = "") -> str:
+    def call_model_with_math(
+        self, validation_data: Dict[str, Any], block_hash: str = ""
+    ) -> str:
         """
         Call the AI model with Level 16000 math context injected.
 
@@ -93,24 +97,24 @@ Post-Safeguards:
 
         # Inject math context into validation data
         math_context = self.inject_math_context(validation_data)
-        
+
         # Enhance validation data with math context
         enhanced_data = {
             **validation_data,
             "math_context": math_context,
-            "model_prompt_type": "level_16000_mining"
+            "model_prompt_type": "level_16000_mining",
         }
 
         try:
             # Use existing ai_interface functionality
             response = call_ai_model(enhanced_data, block_hash)
-            
+
             if not response.startswith("AI_"):
                 self.successful_calls += 1
                 self.log("Model call successful")
             else:
                 self.log(f"Model call failed: {response}")
-            
+
             return response
 
         except Exception as e:
@@ -130,7 +134,7 @@ Post-Safeguards:
         """
         try:
             self.log("Making direct Ollama call...")
-            
+
             result = subprocess.run(  # nosec B603 B607
                 ["ollama", "run", self.model_name],
                 input=prompt,
@@ -152,7 +156,9 @@ Post-Safeguards:
         except Exception as e:
             return f"OLLAMA_UNKNOWN_ERROR: {str(e)}"
 
-    def analyze_mining_opportunity(self, validation_data: Dict[str, Any], block_hash: str = "") -> Dict[str, Any]:
+    def analyze_mining_opportunity(
+        self, validation_data: Dict[str, Any], block_hash: str = ""
+    ) -> Dict[str, Any]:
         """
         Comprehensive mining opportunity analysis.
 
@@ -167,21 +173,21 @@ Post-Safeguards:
 
         # Get AI response
         ai_response = self.call_model_with_math(validation_data, block_hash)
-        
+
         # Extract recommendation
         recommendation = extract_recommendation(ai_response)
-        
+
         # Analyze validation results
         critical_checks = [
             validation_data.get("fork_integrity", False),
             validation_data.get("entropy_parity", False),
             validation_data.get("fork_sync", False),
             validation_data.get("pre_drift", False),
-            validation_data.get("post_drift", False)
+            validation_data.get("post_drift", False),
         ]
-        
+
         validation_score = sum(critical_checks) / len(critical_checks) * 100
-        
+
         analysis = {
             "recommendation": recommendation,
             "ai_response": ai_response,
@@ -190,10 +196,12 @@ Post-Safeguards:
             "total_checks": len(critical_checks),
             "should_proceed": recommendation == "PROCEED" and validation_score >= 80,
             "block_hash": block_hash,
-            "level": validation_data.get("level", 16000)
+            "level": validation_data.get("level", 16000),
         }
-        
-        self.log(f"Analysis complete - Recommendation: {recommendation}, Score: {validation_score:.1f}%")
+
+        self.log(
+            f"Analysis complete - Recommendation: {recommendation}, Score: {validation_score:.1f}%"
+        )
         return analysis
 
     def get_model_stats(self) -> Dict[str, Any]:
@@ -203,13 +211,17 @@ Post-Safeguards:
         Returns:
             Dictionary with call statistics
         """
-        success_rate = (self.successful_calls / self.calls_made * 100) if self.calls_made > 0 else 0
-        
+        success_rate = (
+            (self.successful_calls / self.calls_made * 100)
+            if self.calls_made > 0
+            else 0
+        )
+
         return {
             "total_calls": self.calls_made,
             "successful_calls": self.successful_calls,
             "success_rate_percent": round(success_rate, 2),
-            "model_name": self.model_name
+            "model_name": self.model_name,
         }
 
 
@@ -233,21 +245,21 @@ def main():
         "post_recursion_sync": True,
         "fork_sync": True,
         "pre_stabilizer": "941d793ce78e45983a4d98d6e4ed0529d923f06f8ecefcabe45c5448c65333fca",
-        "post_stabilizer": "74402f56dc3f9154da10ab8d5dbe518db9aa2a332b223bc7bdca9871d0b1a55c"
+        "post_stabilizer": "74402f56dc3f9154da10ab8d5dbe518db9aa2a332b223bc7bdca9871d0b1a55c",
     }
-    
+
     test_block_hash = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
 
     # Create model caller
     caller = ModelCaller(verbose=True)
-    
+
     # Test analysis
     print("Testing mining opportunity analysis...")
     analysis = caller.analyze_mining_opportunity(test_validation_data, test_block_hash)
-    
+
     print(f"\nAnalysis Results:")
     print(json.dumps(analysis, indent=2))
-    
+
     # Show stats
     stats = caller.get_model_stats()
     print(f"\nModel Stats: {stats}")

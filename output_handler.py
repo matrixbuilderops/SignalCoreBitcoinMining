@@ -14,6 +14,7 @@ from enum import Enum
 
 class OutputMode(Enum):
     """Output mode enumeration."""
+
     VERBOSE = "verbose"
     QUIET = "quiet"
     THINKING = "thinking"
@@ -59,7 +60,7 @@ class OutputHandler:
         """
         with self._lock:
             if force or self._should_output(level):
-                timestamp = time.strftime('%H:%M:%S')
+                timestamp = time.strftime("%H:%M:%S")
                 formatted_message = f"[{timestamp}] {level}: {message}"
                 print(formatted_message)
                 sys.stdout.flush()
@@ -116,7 +117,9 @@ class OutputHandler:
                 return
 
             self.thinking_active = True
-            self.thinking_thread = threading.Thread(target=self._thinking_animation, daemon=True)
+            self.thinking_thread = threading.Thread(
+                target=self._thinking_animation, daemon=True
+            )
             self.thinking_thread.start()
 
     def stop_thinking(self) -> None:
@@ -159,7 +162,9 @@ class OutputHandler:
         else:
             self.log_info(f"Block {block_hash[:16]}... - {stage}")
 
-    def log_mining_result(self, success: bool, block_hash: str, details: str = "") -> None:
+    def log_mining_result(
+        self, success: bool, block_hash: str, details: str = ""
+    ) -> None:
         """
         Log mining result with appropriate formatting.
 
@@ -169,7 +174,7 @@ class OutputHandler:
             details: Additional details
         """
         self.stop_thinking()
-        
+
         if success:
             message = f"✓ Mining SUCCESS - Block: {block_hash}"
             if details:
@@ -224,12 +229,12 @@ class OutputHandler:
         """
         if total == 0:
             return "[" + "=" * width + "]"
-        
+
         progress = current / total
         filled = int(width * progress)
         bar = "=" * filled + "-" * (width - filled)
         percentage = progress * 100
-        
+
         return f"[{bar}] {percentage:.1f}% ({current}/{total})"
 
     def prompt_user(self, question: str, default: str = "y") -> str:
@@ -245,7 +250,7 @@ class OutputHandler:
         """
         if self.mode != OutputMode.VERBOSE:
             return default
-        
+
         try:
             response = input(f"{question} [{default}]: ").strip()
             return response if response else default
@@ -289,21 +294,21 @@ def main():
     Test the output handler functionality.
     """
     handler = OutputHandler(OutputMode.VERBOSE)
-    
+
     print("Testing output handler modes...")
-    
+
     # Test verbose mode
     handler.set_mode(OutputMode.VERBOSE)
     handler.log_info("This is verbose mode")
     handler.log_warning("This is a warning")
     handler.log_error("This is an error")
-    
+
     # Test quiet mode
     print("\nSwitching to quiet mode...")
     handler.set_mode(OutputMode.QUIET)
     handler.log_info("This should not appear")
     handler.log_error("Only errors should appear")
-    
+
     # Test thinking mode
     print("\nSwitching to thinking mode...")
     handler.set_mode(OutputMode.THINKING)
@@ -312,18 +317,22 @@ def main():
     time.sleep(3)
     handler.stop_thinking()
     handler.log_success("Block processed successfully!")
-    
+
     # Test mining result logging
     handler.set_mode(OutputMode.VERBOSE)
-    handler.log_mining_result(True, "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", "Level 16000 validation passed")
+    handler.log_mining_result(
+        True,
+        "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
+        "Level 16000 validation passed",
+    )
     handler.log_mining_result(False, "abcdef123456", "Validation failed")
-    
+
     # Test stats logging
     test_stats = {
         "Blocks Processed": 100,
         "Successful Submissions": 15,
         "Success Rate": "15.0%",
-        "Runtime": "30.5 minutes"
+        "Runtime": "30.5 minutes",
     }
     handler.log_stats(test_stats)
 

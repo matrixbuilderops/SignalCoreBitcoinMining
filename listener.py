@@ -67,6 +67,7 @@ def main():
     """
     Main entry point for testing the listener.
     """
+
     def test_callback(topic: bytes, message: bytes) -> None:
         """Test callback for block notifications."""
         block_hash = (
@@ -77,7 +78,7 @@ def main():
     # Create and start listener
     listener = BitcoinBlockListener(verbose=True)
     listener.set_callback(test_callback)
-    
+
     try:
         listener.start_listening()
     except Exception as e:
