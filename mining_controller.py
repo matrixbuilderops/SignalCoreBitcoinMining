@@ -7,6 +7,7 @@ and network submission for the autonomous mining system.
 
 import subprocess  # nosec B404
 import json
+import time
 from typing import Optional, Dict, Any
 
 
@@ -28,7 +29,7 @@ def call_bitcoin_rpc(method: str, params: Optional[list] = None) -> Dict[str, An
         params: List of parameters for the method
 
     Returns:
-        Dictionary containing RPC response
+        Dictionary containing RPC response (always returns dict, never None)
     """
     if params is None:
         params = []
@@ -132,6 +133,184 @@ def submit_solution(validation_results: Dict[str, Any]) -> Optional[str]:
     else:
         print("Mining submission returned no block hash")
         return None
+
+
+def get_mempool_info() -> Dict[str, Any]:
+    """
+    Get current mempool information.
+
+    Returns:
+        Dictionary containing mempool status and transaction info
+    """
+    return call_bitcoin_rpc("getmempoolinfo")
+
+
+def get_mempool_transactions() -> Dict[str, Any]:
+    """
+    Get list of transactions in mempool.
+
+    Returns:
+        Dictionary containing mempool transactions
+    """
+    return call_bitcoin_rpc("getrawmempool", [True])
+
+
+def get_block_height() -> int:
+    """
+    Get current block height.
+
+    Returns:
+        Current block height or 0 if error
+    """
+    blockchain_info = get_blockchain_info()
+    if blockchain_info and blockchain_info.get("result"):
+        return blockchain_info["result"].get("blocks", 0)
+    return 0
+
+
+def get_network_hashrate() -> float:
+    """
+    Get current network hashrate.
+
+    Returns:
+        Network hashrate in hashes per second
+    """
+    mining_info = get_mining_info()
+    if mining_info and mining_info.get("result"):
+        return mining_info["result"].get("networkhashps", 0.0)
+    return 0.0
+
+
+def get_difficulty() -> float:
+    """
+    Get current mining difficulty.
+
+    Returns:
+        Current difficulty or 0 if error
+    """
+    blockchain_info = get_blockchain_info()
+    if blockchain_info and blockchain_info.get("result"):
+        return blockchain_info["result"].get("difficulty", 0.0)
+    return 0.0
+    return result.get("difficulty", 0.0)
+
+
+def push_transaction(tx_hex: str) -> Optional[str]:
+    """
+    Push a transaction to the network.
+
+    Args:
+        tx_hex: Raw transaction in hexadecimal format
+
+    Returns:
+        Transaction ID if successful, None if failed
+    """
+    result = call_bitcoin_rpc("sendrawtransaction", [tx_hex])
+    
+    if result.get("error"):
+        print(f"Transaction push failed: {result['error']}")
+        return None
+    
+    tx_id = result.get("result")
+    if tx_id:
+        print(f"Transaction pushed successfully: {tx_id}")
+        return str(tx_id)
+    else:
+        print("Transaction push returned no ID")
+        return None
+
+
+def create_mining_transaction(amount: float, fee: float = 0.0001) -> Optional[str]:
+    """
+    Create a mining transaction for payouts.
+
+    Args:
+        amount: Amount to send (in BTC)
+        fee: Transaction fee (in BTC)
+
+    Returns:
+        Raw transaction hex or None if failed
+    """
+    try:
+        # Create transaction to mining address
+        result = call_bitcoin_rpc("createrawtransaction", [
+            [],  # inputs (let wallet choose)
+            {BITCOIN_ADDRESS: amount}  # outputs
+        ])
+        
+        if result.get("error"):
+            print(f"Transaction creation failed: {result['error']}")
+            return None
+            
+        raw_tx = result.get("result")
+        if raw_tx:
+            # Fund the transaction
+            funded_result = call_bitcoin_rpc("fundrawtransaction", [raw_tx])
+            if funded_result.get("result"):
+                return str(funded_result["result"].get("hex"))
+        
+        return None
+        
+    except Exception as e:
+        print(f"Error creating mining transaction: {e}")
+        return None
+
+
+def validate_wallet_address(address: str) -> bool:
+    """
+    Validate a Bitcoin wallet address.
+
+    Args:
+        address: Bitcoin address to validate
+
+    Returns:
+        True if address is valid
+    """
+    result = call_bitcoin_rpc("validateaddress", [address])
+    if result and result.get("result"):
+        validation_result = result["result"]
+        return validation_result.get("isvalid", False)
+    return False
+
+
+def get_wallet_balance() -> float:
+    """
+    Get current wallet balance.
+
+    Returns:
+        Wallet balance in BTC
+    """
+    result = call_bitcoin_rpc("getbalance")
+    if result and result.get("result") is not None:
+        return float(result["result"])
+    return 0.0
+
+
+def get_chain_data() -> Dict[str, Any]:
+    """
+    Get comprehensive chain data for mining operations.
+
+    Returns:
+        Dictionary with current blockchain state
+    """
+    blockchain_info = get_blockchain_info()
+    mining_info = get_mining_info()
+    mempool_info = get_mempool_info()
+    
+    chain_data = {
+        "block_height": get_block_height(),
+        "difficulty": get_difficulty(),
+        "network_hashrate": get_network_hashrate(),
+        "wallet_balance": get_wallet_balance(),
+        "mempool_size": mempool_info.get("result", {}).get("size", 0) if mempool_info else 0,
+        "mempool_bytes": mempool_info.get("result", {}).get("bytes", 0) if mempool_info else 0,
+        "blockchain_info": blockchain_info.get("result", {}) if blockchain_info else {},
+        "mining_info": mining_info.get("result", {}) if mining_info else {},
+        "address_valid": validate_wallet_address(BITCOIN_ADDRESS),
+        "timestamp": time.time()
+    }
+    
+    return chain_data
 
 
 def monitor_mining_progress() -> Dict[str, Any]:
