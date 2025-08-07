@@ -8,7 +8,7 @@ Integrates with existing ai_interface.py functionality.
 import subprocess  # nosec B404
 import json
 from typing import Dict, Any, Optional
-from ai_interface import call_ai_model, extract_recommendation
+from ai_interface import get_ai_recommendation_with_fallback, extract_recommendation
 
 
 class ModelCaller:
@@ -106,10 +106,12 @@ Post-Safeguards:
         }
 
         try:
-            # Use existing ai_interface functionality
-            response = call_ai_model(enhanced_data, block_hash)
+            # Use enhanced AI interface with fallback
+            response = get_ai_recommendation_with_fallback(
+                enhanced_data, block_hash, enable_ai=True
+            )
 
-            if not response.startswith("AI_"):
+            if not any(error in response.upper() for error in ["AI_", "MODEL_", "OLLAMA_"]):
                 self.successful_calls += 1
                 self.log("Model call successful")
             else:
@@ -119,7 +121,10 @@ Post-Safeguards:
 
         except Exception as e:
             self.log(f"Model call error: {str(e)}")
-            return f"MODEL_ERROR: {str(e)}"
+            # Fallback to mathematical decision
+            return get_ai_recommendation_with_fallback(
+                validation_data, block_hash, enable_ai=False
+            )
 
     def direct_ollama_call(self, prompt: str, timeout: int = 30) -> str:
         """
