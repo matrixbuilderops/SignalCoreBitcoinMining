@@ -111,7 +111,9 @@ Post-Safeguards:
                 enhanced_data, block_hash, enable_ai=True
             )
 
-            if not any(error in response.upper() for error in ["AI_", "MODEL_", "OLLAMA_"]):
+            if not any(
+                error in response.upper() for error in ["AI_", "MODEL_", "OLLAMA_"]
+            ):
                 self.successful_calls += 1
                 self.log("Model call successful")
             else:

@@ -192,7 +192,7 @@ def run_test_mode(miner: BlockMiner) -> bool:
             print(f"Block Hash: {block['hash']}")
 
             # Process through complete mining pipeline
-            miner._process_mining_opportunity(block["data"], block["hash"])
+            miner._process_mining_opportunity(bytes(block["data"]), str(block["hash"]))
 
             # Brief pause between blocks
             time.sleep(1)

@@ -18,6 +18,7 @@ from collections import deque
 @dataclass
 class PerformanceMetrics:
     """Performance metrics tracking."""
+
     blocks_per_second: float = 0.0
     avg_processing_time: float = 0.0
     cache_hit_rate: float = 0.0
@@ -34,7 +35,7 @@ class ValidationCache:
     def __init__(self, max_size: int = 1000):
         """
         Initialize validation cache.
-        
+
         Args:
             max_size: Maximum number of cached results
         """
@@ -48,10 +49,10 @@ class ValidationCache:
     def get(self, block_hash: str) -> Optional[Dict[str, Any]]:
         """
         Get cached validation result.
-        
+
         Args:
             block_hash: Block hash key
-            
+
         Returns:
             Cached validation result or None
         """
@@ -67,7 +68,7 @@ class ValidationCache:
     def set(self, block_hash: str, validation_result: Dict[str, Any]) -> None:
         """
         Cache validation result.
-        
+
         Args:
             block_hash: Block hash key
             validation_result: Validation result to cache
@@ -75,7 +76,9 @@ class ValidationCache:
         with self._lock:
             # Remove oldest entry if at capacity
             if len(self.cache) >= self.max_size:
-                oldest_key = min(self.access_times.keys(), key=lambda k: self.access_times[k])
+                oldest_key = min(
+                    self.access_times.keys(), key=lambda k: self.access_times[k]
+                )
                 del self.cache[oldest_key]
                 del self.access_times[oldest_key]
 
@@ -102,7 +105,7 @@ class ParallelBlockProcessor:
     def __init__(self, max_workers: int = 3, queue_size: int = 100):
         """
         Initialize parallel processor.
-        
+
         Args:
             max_workers: Maximum number of worker threads
             queue_size: Maximum queue size for pending blocks
@@ -129,24 +132,23 @@ class ParallelBlockProcessor:
                 self.executor.shutdown(wait=True)
 
     def submit_block(
-        self, 
-        block_data: bytes, 
-        block_hash: str, 
-        processor_func: Callable
+        self, block_data: bytes, block_hash: str, processor_func: Callable
     ) -> bool:
         """
         Submit block for parallel processing.
-        
+
         Args:
             block_data: Block data to process
             block_hash: Block hash
             processor_func: Function to process the block
-            
+
         Returns:
             True if submitted successfully
         """
         try:
-            self.processing_queue.put((block_data, block_hash, processor_func), timeout=1)
+            self.processing_queue.put(
+                (block_data, block_hash, processor_func), timeout=1
+            )
             return True
         except queue.Full:
             return False
@@ -154,17 +156,20 @@ class ParallelBlockProcessor:
     def process_blocks(self) -> None:
         """Process blocks from queue in parallel."""
         futures = []
-        
+
         while self.running:
             try:
                 # Get blocks from queue
-                block_data, block_hash, processor_func = self.processing_queue.get(timeout=1)
-                
+                block_data, block_hash, processor_func = self.processing_queue.get(
+                    timeout=1
+                )
+
                 # Submit to thread pool
-                future = self.executor.submit(self._process_single_block, 
-                                            block_data, block_hash, processor_func)
+                future = self.executor.submit(
+                    self._process_single_block, block_data, block_hash, processor_func
+                )
                 futures.append((future, block_hash))
-                
+
                 # Clean up completed futures
                 completed_futures = []
                 for future, hash_val in futures:
@@ -175,45 +180,42 @@ class ParallelBlockProcessor:
                         except Exception as e:
                             self.result_queue.put((hash_val, f"ERROR: {e}"))
                         completed_futures.append((future, hash_val))
-                
+
                 # Remove completed futures
                 for completed in completed_futures:
                     futures.remove(completed)
-                    
+
             except queue.Empty:
                 continue
             except Exception as e:
                 print(f"Error in parallel processing: {e}")
 
     def _process_single_block(
-        self, 
-        block_data: bytes, 
-        block_hash: str, 
-        processor_func: Callable
+        self, block_data: bytes, block_hash: str, processor_func: Callable
     ) -> Any:
         """
         Process a single block.
-        
+
         Args:
             block_data: Block data
             block_hash: Block hash
             processor_func: Processing function
-            
+
         Returns:
             Processing result
         """
         with self._lock:
             self.workers_busy += 1
-        
+
         try:
             start_time = time.time()
             result = processor_func(block_data, block_hash)
             processing_time = time.time() - start_time
-            
+
             return {
-                'result': result,
-                'processing_time': processing_time,
-                'timestamp': time.time()
+                "result": result,
+                "processing_time": processing_time,
+                "timestamp": time.time(),
             }
         finally:
             with self._lock:
@@ -226,7 +228,11 @@ class ParallelBlockProcessor:
     def get_worker_utilization(self) -> float:
         """Get worker utilization percentage."""
         with self._lock:
-            return (self.workers_busy / self.max_workers * 100) if self.max_workers > 0 else 0.0
+            return (
+                (self.workers_busy / self.max_workers * 100)
+                if self.max_workers > 0
+                else 0.0
+            )
 
 
 class PerformanceMonitor:
@@ -235,7 +241,7 @@ class PerformanceMonitor:
     def __init__(self, window_size: int = 100):
         """
         Initialize performance monitor.
-        
+
         Args:
             window_size: Size of rolling window for metrics
         """
@@ -261,39 +267,46 @@ class PerformanceMonitor:
             if submission_time > 0:
                 self.submission_times.append(submission_time)
 
-    def get_metrics(self, cache: Optional[ValidationCache] = None) -> PerformanceMetrics:
+    def get_metrics(
+        self, cache: Optional[ValidationCache] = None
+    ) -> PerformanceMetrics:
         """
         Get current performance metrics.
-        
+
         Args:
             cache: Optional validation cache for hit rate
-            
+
         Returns:
             Current performance metrics
         """
         with self._lock:
             uptime = time.time() - self.start_time
-            
+
             metrics = PerformanceMetrics()
-            
+
             # Calculate blocks per second
-            metrics.blocks_per_second = self.total_blocks / uptime if uptime > 0 else 0.0
-            
+            metrics.blocks_per_second = (
+                self.total_blocks / uptime if uptime > 0 else 0.0
+            )
+
             # Average processing time
             if self.processing_times:
-                metrics.avg_processing_time = sum(self.processing_times) / len(self.processing_times)
-            
+                metrics.avg_processing_time = sum(self.processing_times) / len(
+                    self.processing_times
+                )
+
             # Success rate
             metrics.successful_submissions = self.successful_blocks
             metrics.total_processing_time = uptime
-            
+
             # Cache hit rate
             if cache:
                 metrics.cache_hit_rate = cache.get_hit_rate()
-            
+
             # Memory usage (approximate)
             try:
                 import psutil
+
                 process = psutil.Process()
                 metrics.memory_usage_mb = process.memory_info().rss / 1024 / 1024
             except ImportError:
@@ -304,15 +317,15 @@ class PerformanceMonitor:
     def get_performance_summary(self, cache: Optional[ValidationCache] = None) -> str:
         """
         Get formatted performance summary.
-        
+
         Args:
             cache: Optional validation cache
-            
+
         Returns:
             Formatted performance summary
         """
         metrics = self.get_metrics(cache)
-        
+
         summary = f"""
 Performance Summary:
 ├─ Throughput: {metrics.blocks_per_second:.2f} blocks/sec
@@ -331,7 +344,7 @@ class OptimizedMiningEngine:
     def __init__(self, max_workers: int = 3, cache_size: int = 1000):
         """
         Initialize optimized mining engine.
-        
+
         Args:
             max_workers: Maximum worker threads
             cache_size: Validation cache size
@@ -352,25 +365,22 @@ class OptimizedMiningEngine:
         self.parallel_processor.stop()
 
     def process_block_optimized(
-        self, 
-        block_data: bytes, 
-        block_hash: str, 
-        processor_func: Callable
+        self, block_data: bytes, block_hash: str, processor_func: Callable
     ) -> Any:
         """
         Process block with optimizations.
-        
+
         Args:
             block_data: Block data
             block_hash: Block hash
             processor_func: Processing function
-            
+
         Returns:
             Processing result
         """
         start_time = time.time()
         result = None
-        
+
         try:
             # Check cache first
             if self.optimization_enabled:
@@ -402,7 +412,7 @@ class OptimizedMiningEngine:
 
             processing_time = time.time() - start_time
             self.performance_monitor.record_processing_time(processing_time)
-            
+
             return result
 
         except Exception as e:
@@ -413,13 +423,13 @@ class OptimizedMiningEngine:
     def get_optimization_status(self) -> Dict[str, Any]:
         """Get current optimization status."""
         return {
-            'optimizations_enabled': self.optimization_enabled,
-            'parallel_processing': self.parallel_processor.running,
-            'cache_size': len(self.cache.cache),
-            'cache_hit_rate': self.cache.get_hit_rate(),
-            'queue_depth': self.parallel_processor.get_queue_depth(),
-            'worker_utilization': self.parallel_processor.get_worker_utilization(),
-            'performance_metrics': self.performance_monitor.get_metrics(self.cache)
+            "optimizations_enabled": self.optimization_enabled,
+            "parallel_processing": self.parallel_processor.running,
+            "cache_size": len(self.cache.cache),
+            "cache_hit_rate": self.cache.get_hit_rate(),
+            "queue_depth": self.parallel_processor.get_queue_depth(),
+            "worker_utilization": self.parallel_processor.get_worker_utilization(),
+            "performance_metrics": self.performance_monitor.get_metrics(self.cache),
         }
 
     def cleanup(self) -> None:
@@ -444,13 +454,14 @@ def optimize_for_production() -> None:
     """Apply production optimizations."""
     optimizer = get_optimizer()
     optimizer.enable_optimizations()
-    
+
     # Set environment optimizations
-    os.environ['PYTHONUNBUFFERED'] = '1'
-    os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
-    
+    os.environ["PYTHONUNBUFFERED"] = "1"
+    os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
+
     # GC optimizations
     import gc
+
     gc.set_threshold(700, 10, 10)  # Reduce GC frequency for performance
 
 
@@ -458,7 +469,7 @@ def get_performance_report() -> str:
     """Get comprehensive performance report."""
     optimizer = get_optimizer()
     status = optimizer.get_optimization_status()
-    
+
     report = f"""
 🚀 SignalCore Mining - Performance Report
 ========================================
@@ -485,29 +496,29 @@ if __name__ == "__main__":
     # Demo performance optimization
     print("SignalCore Bitcoin Mining - Performance Optimization Demo")
     print("=" * 60)
-    
+
     optimizer = get_optimizer()
     optimizer.enable_optimizations()
-    
+
     print(get_performance_report())
-    
+
     # Simulate some processing
     import random
     import time
-    
+
     def mock_processor(block_data, block_hash):
         time.sleep(random.uniform(0.1, 0.3))  # Simulate processing
         return {"level": 16000, "result": "success"}
-    
+
     print("Running performance test...")
     for i in range(10):
         test_hash = f"test_block_{i:03d}"
         test_data = f"test_data_{i}".encode()
-        
+
         optimizer.process_block_optimized(test_data, test_hash, mock_processor)
         optimizer.performance_monitor.record_submission(True, 0.1)
-    
+
     print("\nFinal Performance Report:")
     print(get_performance_report())
-    
+
     optimizer.cleanup()
