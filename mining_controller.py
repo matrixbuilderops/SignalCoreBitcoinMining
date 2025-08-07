@@ -164,7 +164,8 @@ def get_block_height() -> int:
     """
     blockchain_info = get_blockchain_info()
     if blockchain_info and blockchain_info.get("result"):
-        return blockchain_info["result"].get("blocks", 0)
+        blocks = blockchain_info["result"].get("blocks", 0)
+        return int(blocks) if blocks is not None else 0
     return 0
 
 
@@ -177,7 +178,8 @@ def get_network_hashrate() -> float:
     """
     mining_info = get_mining_info()
     if mining_info and mining_info.get("result"):
-        return mining_info["result"].get("networkhashps", 0.0)
+        hashrate = mining_info["result"].get("networkhashps", 0.0)
+        return float(hashrate) if hashrate is not None else 0.0
     return 0.0
 
 
@@ -190,9 +192,9 @@ def get_difficulty() -> float:
     """
     blockchain_info = get_blockchain_info()
     if blockchain_info and blockchain_info.get("result"):
-        return blockchain_info["result"].get("difficulty", 0.0)
+        difficulty = blockchain_info["result"].get("difficulty", 0.0)
+        return float(difficulty) if difficulty is not None else 0.0
     return 0.0
-    return result.get("difficulty", 0.0)
 
 
 def push_transaction(tx_hex: str) -> Optional[str]:
@@ -206,11 +208,11 @@ def push_transaction(tx_hex: str) -> Optional[str]:
         Transaction ID if successful, None if failed
     """
     result = call_bitcoin_rpc("sendrawtransaction", [tx_hex])
-    
+
     if result.get("error"):
         print(f"Transaction push failed: {result['error']}")
         return None
-    
+
     tx_id = result.get("result")
     if tx_id:
         print(f"Transaction pushed successfully: {tx_id}")
@@ -233,24 +235,24 @@ def create_mining_transaction(amount: float, fee: float = 0.0001) -> Optional[st
     """
     try:
         # Create transaction to mining address
-        result = call_bitcoin_rpc("createrawtransaction", [
-            [],  # inputs (let wallet choose)
-            {BITCOIN_ADDRESS: amount}  # outputs
-        ])
-        
+        result = call_bitcoin_rpc(
+            "createrawtransaction",
+            [[], {BITCOIN_ADDRESS: amount}],  # inputs (let wallet choose)  # outputs
+        )
+
         if result.get("error"):
             print(f"Transaction creation failed: {result['error']}")
             return None
-            
+
         raw_tx = result.get("result")
         if raw_tx:
             # Fund the transaction
             funded_result = call_bitcoin_rpc("fundrawtransaction", [raw_tx])
             if funded_result.get("result"):
                 return str(funded_result["result"].get("hex"))
-        
+
         return None
-        
+
     except Exception as e:
         print(f"Error creating mining transaction: {e}")
         return None
@@ -269,7 +271,8 @@ def validate_wallet_address(address: str) -> bool:
     result = call_bitcoin_rpc("validateaddress", [address])
     if result and result.get("result"):
         validation_result = result["result"]
-        return validation_result.get("isvalid", False)
+        is_valid = validation_result.get("isvalid", False)
+        return bool(is_valid) if is_valid is not None else False
     return False
 
 
@@ -296,20 +299,24 @@ def get_chain_data() -> Dict[str, Any]:
     blockchain_info = get_blockchain_info()
     mining_info = get_mining_info()
     mempool_info = get_mempool_info()
-    
+
     chain_data = {
         "block_height": get_block_height(),
         "difficulty": get_difficulty(),
         "network_hashrate": get_network_hashrate(),
         "wallet_balance": get_wallet_balance(),
-        "mempool_size": mempool_info.get("result", {}).get("size", 0) if mempool_info else 0,
-        "mempool_bytes": mempool_info.get("result", {}).get("bytes", 0) if mempool_info else 0,
+        "mempool_size": (
+            mempool_info.get("result", {}).get("size", 0) if mempool_info else 0
+        ),
+        "mempool_bytes": (
+            mempool_info.get("result", {}).get("bytes", 0) if mempool_info else 0
+        ),
         "blockchain_info": blockchain_info.get("result", {}) if blockchain_info else {},
         "mining_info": mining_info.get("result", {}) if mining_info else {},
         "address_valid": validate_wallet_address(BITCOIN_ADDRESS),
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
-    
+
     return chain_data
 
 

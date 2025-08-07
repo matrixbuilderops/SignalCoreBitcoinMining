@@ -188,7 +188,7 @@ class SubmissionClient:
             solution_data = self.prepare_solution_data(validation_results)
 
             # Record submission time
-            self.last_submission_time = time.time()
+            self.last_submission_time = int(time.time())
 
             # Submit using existing mining controller
             submitted_hash = submit_solution(validation_results)

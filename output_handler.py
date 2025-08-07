@@ -202,7 +202,7 @@ class OutputHandler:
             self.log_info(f"  {key}: {value}", force_output)
         self.log_info("=" * 25, force_output)
 
-    def log_system_status(self, status: str, details: Dict[str, Any] = None) -> None:
+    def log_system_status(self, status: str, details: Optional[Dict[str, Any]] = None) -> None:
         """
         Log system status information.
 

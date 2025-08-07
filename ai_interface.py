@@ -69,32 +69,32 @@ Provide a brief mining recommendation (PROCEED, HOLD, or RETRY) and reasoning.""
 def fallback_math_decision(validation_data: Dict[str, Any]) -> str:
     """
     Make mining decision based purely on mathematical validation when AI is unavailable.
-    
+
     Args:
         validation_data: Dictionary containing validation results from math processing
-        
+
     Returns:
         Decision based on mathematical criteria (PROCEED, HOLD, RETRY)
     """
     # Count passed validation checks
     critical_checks = [
-        validation_data.get('pre_drift', False),
-        validation_data.get('fork_integrity', False),
-        validation_data.get('recursion_sync', False),
-        validation_data.get('entropy_parity', False),
-        validation_data.get('post_drift', False),
-        validation_data.get('fork_sync', False)
+        validation_data.get("pre_drift", False),
+        validation_data.get("fork_integrity", False),
+        validation_data.get("recursion_sync", False),
+        validation_data.get("entropy_parity", False),
+        validation_data.get("post_drift", False),
+        validation_data.get("fork_sync", False),
     ]
-    
+
     passed_checks = sum(critical_checks)
     total_checks = len(critical_checks)
-    
+
     # Level 16000 specific validation
-    level = validation_data.get('level', 0)
-    sorrell = validation_data.get('sorrell', 0)
-    bit_load = validation_data.get('bit_load', 0)
-    cycles = validation_data.get('cycles', 0)
-    
+    level = validation_data.get("level", 0)
+    sorrell = validation_data.get("sorrell", 0)
+    bit_load = validation_data.get("bit_load", 0)
+    cycles = validation_data.get("cycles", 0)
+
     # Mathematical decision logic
     if level == 16000 and passed_checks >= (total_checks * 0.8):  # 80% pass rate
         if sorrell > 0 and bit_load == 1600000 and cycles == 161:
@@ -140,25 +140,30 @@ def extract_recommendation(ai_response: str) -> str:
         return "HOLD"
 
 
-def get_ai_recommendation_with_fallback(validation_data: Dict[str, Any], block_hash: str = "", enable_ai: bool = True) -> str:
+def get_ai_recommendation_with_fallback(
+    validation_data: Dict[str, Any], block_hash: str = "", enable_ai: bool = True
+) -> str:
     """
     Get mining recommendation using AI or mathematical fallback.
-    
+
     Args:
         validation_data: Validation results from math processing
         block_hash: Optional block hash for context
         enable_ai: Whether to attempt AI analysis first
-        
+
     Returns:
         Mining recommendation with reasoning
     """
     if enable_ai:
         # Try AI first
         ai_response = call_ai_model(validation_data, block_hash)
-        
+
         # If AI is working, use its response
-        if not any(error in ai_response.upper() for error in ["AI_ERROR", "AI_TIMEOUT", "AI_CALL_ERROR", "AI_UNKNOWN_ERROR"]):
+        if not any(
+            error in ai_response.upper()
+            for error in ["AI_ERROR", "AI_TIMEOUT", "AI_CALL_ERROR", "AI_UNKNOWN_ERROR"]
+        ):
             return ai_response
-    
+
     # Fallback to mathematical decision
     return fallback_math_decision(validation_data)
