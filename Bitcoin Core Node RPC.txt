@@ -1,12 +1,18 @@
- 🪪 Bitcoin Core Node RPC Auth Info
-
-rpcuser=SingalCoreBitcoin
+  GNU nano 7.2         /home/phantomcore/.bitcoin/bitcoin.conf                  
+server=1
+daemon=1
+txindex=1
+rpcuser=SignalCoreBitcoin
 rpcpassword=B1tc0n4L1dz
+zmqpubhashblock=tcp://127.0.0.1:28335
+zmqpubrawblock=tcp://127.0.0.1:28333
+zmqpubhashtx=tcp://127.0.0.1:28334
+zmqpubrawtx=tcp://127.0.0.1:28332
 
-💼 Wallet Name
+payout address
+bc1qmhn4c3yva3yqm9uzwckmk65l4c62qg74jg96qu
 
-SignalCoreBitcoinMining
 
-🏦 Bitcoin Wallet Address
 
-bc1qcmxyhlpm3lf9zvyevqas9n547lywws2e7wvuu1
+
+
